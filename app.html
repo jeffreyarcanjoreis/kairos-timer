@@ -945,8 +945,15 @@ function render(t = decorrido()){
   const L = R.linha, run = $('#v-rodando');
   run.classList.toggle('pausado', !R.rodando && !R.terminou);
   $('#r-aviso').hidden = R.rodando || R.terminou;
-  $('#r-play').innerHTML = R.terminou ? IC.repetir + '<span>Repetir</span>' : R.rodando ? IC.pause + '<span>Pausar</span>' : IC.play + '<span>Continuar</span>';
-  if (!R.terminou) $('#r-sair').textContent = 'Encerrar treino';
+  /* só troca o conteúdo dos botões quando o estado muda: trocar a cada tique (10 vezes por segundo) faz o toque do
+     celular se perder, porque o elemento tocado some entre encostar e soltar o dedo */
+  const play = $('#r-play'), modo = R.terminou ? 'repetir' : R.rodando ? 'pausar' : 'continuar';
+  if (play.dataset.modo !== modo){
+    play.dataset.modo = modo;
+    play.innerHTML = modo === 'repetir' ? IC.repetir + '<span>Repetir</span>' : modo === 'pausar' ? IC.pause + '<span>Pausar</span>' : IC.play + '<span>Continuar</span>';
+  }
+  const sairTxt = R.terminou ? 'Voltar' : 'Encerrar treino';
+  if ($('#r-sair').textContent !== sairTxt) $('#r-sair').textContent = sairTxt;
   if (R.terminou){
     run.dataset.fase = 'fim';
     $('#r-bloco').textContent = R.treino.nome; $('#r-rodada').textContent = '';
