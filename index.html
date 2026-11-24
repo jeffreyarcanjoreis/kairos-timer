@@ -9,14 +9,16 @@
 <meta name="apple-mobile-web-app-title" content="Kairos Timer">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<style>
+@font-face{font-family:'Archivo';font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;src:url('fonts/archivo-latin-wdth.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:300 600;font-display:swap;src:url('fonts/archivo-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:300 500;font-display:swap;src:url('fonts/fraunces-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:300 500;font-display:swap;src:url('fonts/fraunces-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
 <title>Kairos Timer</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#14130f">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..400&display=swap">
 <style>
 /* Layout: app de uma tela — Treinos → Editor → Cronômetro. Identidade Kairos (fundo void, texto bone,
    argila/dourado/sálvia); no cronômetro, a cor da fase ocupa a metade de cima para ser lida de longe. */
@@ -89,6 +91,41 @@ textarea{width:100%;min-height:120px;background:var(--bg);color:var(--fg);border
 .status{font-size:14px;color:var(--gold-light);min-height:1.2em}
 .dicas ul{margin:0;padding-left:18px;color:var(--muted);font-size:15px;display:grid;gap:6px}
 .dicas b{color:var(--fg)}
+.barra-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+.rodape{margin-top:32px;display:flex;gap:6px 18px;justify-content:center;flex-wrap:wrap}
+.rodape button{color:var(--muted);font-size:14px;font-weight:600;padding:10px 6px;text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- configurações ---------- */
+.pagina-titulo{font-family:var(--font-serif);font-weight:400;font-size:40px;line-height:1;margin:6px 0 8px;letter-spacing:-.02em}
+.pagina-sub{color:var(--muted);margin:0 0 8px}
+.grade-opcoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.op-card{background:var(--surface-2);border:2px solid transparent;border-radius:12px;padding:10px;display:grid;gap:8px;text-align:left;font-weight:600;font-size:14px}
+.op-card small{color:var(--muted);font-weight:500;font-size:12px}
+.op-card[aria-pressed=true]{border-color:var(--fg)}
+.amostra{display:flex;height:22px;border-radius:6px;overflow:hidden}
+.amostra i{flex:1}
+.cor{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:2px}
+.cor input[type=color]{width:60px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:3px;flex:none}
+.previa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.previa div{border-radius:10px;padding:12px 4px;text-align:center;font-family:var(--font-display);font-stretch:62%;font-weight:800;font-size:16px;text-transform:uppercase;letter-spacing:.02em;overflow:hidden;white-space:nowrap}
+.seg-ctrl{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;flex:none}
+.seg-ctrl button{padding:8px 12px;border-radius:999px;font-weight:600;font-size:14px;color:var(--muted)}
+.seg-ctrl button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+.vol{display:flex;align-items:center;gap:12px}
+.vol input{flex:1;accent-color:var(--accent);min-width:0}
+.vol output{min-width:3.2em;text-align:right;font-family:var(--font-display);font-stretch:62%;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.sep{border:0;border-top:1px dashed var(--line);margin:2px 0}
+.btn-perigo{border-color:rgba(229,138,106,.5);color:#e58a6a}
+.sobre{margin-top:24px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ---------- privacidade ---------- */
+.legal{max-width:640px}
+.legal h2{font-family:var(--font-serif);font-weight:400;font-size:24px;margin:28px 0 8px;letter-spacing:-.01em}
+.legal p,.legal li{color:#d4cdbd;font-size:16px;line-height:1.55}
+.legal ul{padding-left:20px;display:grid;gap:6px}
+.legal a{color:var(--gold-light)}
+.legal .destaque{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--sage-light);border-radius:var(--r);padding:14px 16px}
+.legal .destaque p{margin:0;color:var(--fg)}
 
 /* ---------- editor ---------- */
 .topo{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
@@ -117,7 +154,7 @@ textarea{width:100%;min-height:120px;background:var(--bg);color:var(--fg);border
 .etapas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .etapa{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;background:var(--surface-2);border-radius:12px;padding:8px;border-left:4px solid var(--work)}
 .etapa[data-tipo=descanso]{border-left-color:var(--rest)}
-.tipo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-radius:8px;background:var(--work);color:var(--on-accent);min-width:96px}
+.tipo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-radius:8px;background:var(--work);color:var(--work-ink);min-width:96px}
 .etapa[data-tipo=descanso] .tipo{background:var(--rest);color:var(--rest-ink)}
 .etapa .inp{padding:9px 10px;background:var(--bg)}
 @media (max-width:520px){
@@ -208,6 +245,8 @@ textarea{width:100%;min-height:120px;background:var(--bg);color:var(--fg);border
       <button class="btn-prim" data-acao="iniciar-edit" id="btn-iniciar-edit">Iniciar treino</button>
     </div></div>
   </section>
+  <section id="v-config" class="app" hidden></section>
+  <section id="v-privacidade" class="app" hidden></section>
   <section id="v-rodando" class="runner" data-fase="preparo" hidden>
     <div class="r-topo">
       <div class="r-meta"><span id="r-bloco"></span><span id="r-rodada"></span></div>
@@ -260,12 +299,50 @@ const IC = {
   pause:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4.5" height="16" rx="1.2"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.2"/></svg>',
   ant:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18l-7-6 7-6M7 6v12"/></svg>',
   prox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l7 6-7 6M17 6v12"/></svg>',
+  engrenagem:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   repetir:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5"/></svg>'
 };
 
 /* ================= dados ================= */
 const CHAVE = 'cronometro-treinos-v1';
-const CONFIG_PADRAO = { volume: 0.9, contagem: true, meio: false, vibrar: true, voz: false };
+const PALETAS = {
+  kairos:    { nome: 'Kairos',         work: '#c2613f', rest: '#6b7355', prep: '#c89b4a', trans: '#d4cdbd' },
+  contraste: { nome: 'Alto contraste', work: '#ff3b30', rest: '#30d158', prep: '#ffd60a', trans: '#ffffff' },
+  oceano:    { nome: 'Oceano',         work: '#ff7b54', rest: '#1f6f8b', prep: '#f4c95d', trans: '#a7d3e0' },
+  neon:      { nome: 'Neon',           work: '#ff2e88', rest: '#00b4ec', prep: '#e8ff3a', trans: '#b48cff' },
+  mono:      { nome: 'Preto e branco', work: '#f0ebe0', rest: '#3a372f', prep: '#a39c8c', trans: '#6e685b' }
+};
+const FASES_COR = [['work', 'Trabalho'], ['rest', 'Descanso'], ['prep', 'Prepare-se'], ['trans', 'Entre blocos']];
+const ESTILOS = {
+  bipe:    { nome: 'Bipe clássico', dica: 'Forte e seco',   onda: 'square',   ganho: .3 },
+  suave:   { nome: 'Suave',         dica: 'Tom limpo',      onda: 'sine',     ganho: .6 },
+  apito:   { nome: 'Apito',         dica: 'Agudo',          onda: 'triangle', ganho: .55, mult: 1.5 },
+  sino:    { nome: 'Sino',          dica: 'Toca e ecoa',    onda: 'sine',     ganho: .55, mult: .75, sino: true },
+  digital: { nome: 'Digital',       dica: 'Relógio de pulso', onda: 'sawtooth', ganho: .2, mult: 1.2 }
+};
+const CONFIG_PADRAO = { volume: 0.9, estiloSom: 'bipe', somTrabalho: true, somDescanso: true, contagem: 3, meio: false, somFim: true,
+  vibrar: true, voz: false, telaLigada: true, cores: { work: '#c2613f', rest: '#6b7355', prep: '#c89b4a', trans: '#d4cdbd' } };
+function normalizarConfig(c){
+  c = { ...CONFIG_PADRAO, ...(c || {}) };
+  if (typeof c.contagem === 'boolean') c.contagem = c.contagem ? 3 : 0;
+  if (![0, 3, 5].includes(c.contagem)) c.contagem = 3;
+  if (!ESTILOS[c.estiloSom]) c.estiloSom = 'bipe';
+  c.volume = Math.min(1, Math.max(0, Number(c.volume) || 0));
+  const hex = v => /^#[0-9a-f]{6}$/i.test(v);
+  c.cores = { ...CONFIG_PADRAO.cores, ...Object.fromEntries(Object.entries(c.cores || {}).filter(([k, v]) => k in CONFIG_PADRAO.cores && hex(v))) };
+  return c;
+}
+/* cor do texto sobre a cor da fase: escolhe escuro ou claro, o que der mais contraste */
+function tinta(hex){
+  const n = parseInt(hex.slice(1), 16), lin = v => (v /= 255) <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4;
+  const L = .2126 * lin(n >> 16 & 255) + .7152 * lin(n >> 8 & 255) + .0722 * lin(n & 255);
+  return (L + .05) / .0536 >= .96 / (L + .05) ? '#0d0c09' : '#f8f5ee';
+}
+function aplicarCores(){
+  const r = document.documentElement.style, c = estado.config.cores;
+  for (const [k] of FASES_COR){ r.setProperty('--' + k, c[k]); r.setProperty('--' + k + '-ink', tinta(c[k])); }
+}
+const paletaAtual = () => Object.keys(PALETAS).find(k => FASES_COR.every(([f]) => PALETAS[k][f].toLowerCase() === estado.config.cores[f].toLowerCase()));
 const etapa = (nome, tipo, seg) => ({ id: uid(), nome, tipo, seg });
 const bloco = (nome, rodadas, etapas, descansoDepois = 0, cortarUltimoDescanso = false) =>
   ({ id: uid(), nome, rodadas, etapas, descansoDepois, cortarUltimoDescanso });
@@ -302,9 +379,9 @@ function carregar(){
     const raw = localStorage.getItem(CHAVE);
     if (raw){ const d = JSON.parse(raw);
       estado.treinos = (d.treinos || []).map(normalizar).filter(Boolean);
-      estado.config = { ...CONFIG_PADRAO, ...(d.config || {}) }; return; }
+      estado.config = normalizarConfig(d.config); return; }
   } catch (e) {}
-  estado.treinos = exemplos();
+  estado.treinos = exemplos(); estado.config = normalizarConfig();
 }
 function salvar(){ try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) {} }
 const nomeEtapa = e => e.nome?.trim() || (e.tipo === 'trabalho' ? 'Trabalho' : 'Descanso');
@@ -341,11 +418,13 @@ function resumoBloco(b){
 function montarEventos(linha){
   const cfg = estado.config, ev = [];
   linha.segs.forEach((s, i) => {
-    if (!(i === 0 && s.tipo === 'preparo')) ev.push({ t: s.ini, som: s.tipo === 'trabalho' ? 'vai' : 'pausa' });
+    if (!(i === 0 && s.tipo === 'preparo')){
+      if (s.tipo === 'trabalho' ? cfg.somTrabalho : cfg.somDescanso) ev.push({ t: s.ini, som: s.tipo === 'trabalho' ? 'vai' : 'pausa' });
+    }
     if (cfg.meio && s.tipo === 'trabalho' && s.seg >= 20) ev.push({ t: s.ini + s.seg / 2, som: 'meio' });
-    if (cfg.contagem) for (let k = 3; k >= 1; k--) if (s.fim - k > s.ini + 0.5) ev.push({ t: s.fim - k, som: 'tic' });
+    for (let k = cfg.contagem; k >= 1; k--) if (s.fim - k > s.ini + 0.5) ev.push({ t: s.fim - k, som: 'tic' });
   });
-  ev.push({ t: linha.total, som: 'fim' });
+  if (cfg.somFim) ev.push({ t: linha.total, som: 'fim' });
   return ev.sort((a, b) => a.t - b.t);
 }
 
@@ -369,17 +448,27 @@ function audio(){
 }
 function destravar(){ const c = audio(); if (!c) return;
   try { const s = c.createBufferSource(); s.buffer = c.createBuffer(1, 1, 22050); s.connect(c.destination); s.start(0); } catch (e) {} }
-function tocar(nome, quando){
+function tocar(nome, quando, estilo){
   const c = audio(); if (!c) return; const t0 = quando ?? c.currentTime;
-  for (const [f, off, dur] of SONS[nome]){
-    const o = c.createOscillator(), g = c.createGain(), a = t0 + off;
-    o.type = 'square'; o.frequency.value = f;
-    g.gain.setValueAtTime(0.0001, a); g.gain.linearRampToValueAtTime(0.3, a + 0.008);
-    g.gain.setValueAtTime(0.3, a + dur - 0.03); g.gain.linearRampToValueAtTime(0.0001, a + dur);
-    o.connect(g); g.connect(MASTER); o.start(a); o.stop(a + dur + 0.02);
-    sons.push({ o, g, fim: a + dur + 0.05 });
+  const E = ESTILOS[estilo || estado.config.estiloSom] || ESTILOS.bipe;
+  for (const [f0, off, dur0] of SONS[nome]){
+    const a = t0 + off, f = f0 * (E.mult || 1);
+    /* o sino soma um harmônico e decai devagar; os outros estilos têm envelope reto */
+    for (const [mult, peso] of E.sino ? [[1, 1], [2.76, .3]] : [[1, 1]]){
+      const o = c.createOscillator(), g = c.createGain(), pico = E.ganho * peso;
+      o.type = E.onda; o.frequency.value = f * mult;
+      let dur = dur0;
+      if (E.sino){ dur = Math.max(dur0, .7);
+        g.gain.setValueAtTime(0.0001, a); g.gain.linearRampToValueAtTime(pico, a + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, a + dur); }
+      else { g.gain.setValueAtTime(0.0001, a); g.gain.linearRampToValueAtTime(pico, a + 0.008);
+        g.gain.setValueAtTime(pico, a + dur - 0.03); g.gain.linearRampToValueAtTime(0.0001, a + dur); }
+      o.connect(g); g.connect(MASTER); o.start(a); o.stop(a + dur + 0.02);
+      sons.push({ o, g, fim: a + dur + 0.05 });
+    }
   }
 }
+function demonstrar(estilo){ destravar(); const c = audio(); if (!c) return; cancelarSons(); const n = c.currentTime + .05;
+  tocar('tic', n, estilo); tocar('tic', n + .7, estilo); tocar('vai', n + 1.4, estilo); }
 function cancelarSons(){ for (const s of sons){ try { s.g.disconnect(); } catch (e) {} try { s.o.stop(); } catch (e) {} } sons = []; }
 function vibrar(p){ if (estado.config.vibrar && navigator.vibrate) try { navigator.vibrate(p); } catch (e) {} }
 function falar(txt){
@@ -387,15 +476,17 @@ function falar(txt){
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'pt-BR'; u.rate = 1.05; speechSynthesis.speak(u); } catch (e) {}
 }
 let wake = null;
-async function pedirTelaLigada(){ try { if ('wakeLock' in navigator && document.visibilityState === 'visible') wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
+async function pedirTelaLigada(){ try { if (estado.config.telaLigada && 'wakeLock' in navigator && document.visibilityState === 'visible') wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
 function soltarTela(){ try { wake?.release(); } catch (e) {} wake = null; }
 
 /* ================= telas ================= */
 let tela = 'lista';
 function mostrar(nome){
   tela = nome;
-  $('#v-lista').hidden = nome !== 'lista'; $('#v-editor').hidden = nome !== 'editor'; $('#v-rodando').hidden = nome !== 'rodando';
+  for (const v of ['lista', 'editor', 'config', 'privacidade', 'rodando']) $('#v-' + v).hidden = nome !== v;
   if (nome === 'lista') renderLista();
+  if (nome === 'config') renderConfig();
+  if (nome === 'privacidade') renderPrivacidade();
   if (nome !== 'rodando') window.scrollTo(0, 0);
 }
 
@@ -409,7 +500,6 @@ function confirmado(btn, texto = 'Toque de novo'){
 
 /* ---------- lista ---------- */
 function renderLista(){
-  const c = estado.config;
   const cards = estado.treinos.map(t => {
     const total = montarLinha(t).total;
     const itens = t.blocos.map((b, i) => `<li><span class="dot"></span>${esc(nomeBloco(b, i))} <em>${resumoBloco(b)}</em></li>` +
@@ -425,53 +515,27 @@ function renderLista(){
       </div></article>`;
   }).join('');
   $('#v-lista').innerHTML = `
+    <div class="barra-topo"><span class="marca">Kair<span>o</span>s Timer</span>
+      <button class="ic" data-acao="config" aria-label="Configurações">${IC.engrenagem}</button></div>
     <header class="cabeca">
-      <div><span class="marca">Kair<span>o</span>s Timer</span><span class="rotulo" style="margin-top:14px">Cronômetro de intervalos</span><h1>Treinos</h1></div>
+      <div><span class="rotulo" style="margin-top:8px">Cronômetro de intervalos</span><h1>Treinos</h1></div>
       <div class="linha-btns">
         <button class="btn-sec" data-acao="instalar" ${promptInstalar ? '' : 'hidden'}>Instalar app</button>
         <button class="btn-prim" data-acao="novo">+ Novo treino</button>
       </div>
     </header>
     <div class="cards">${cards || '<div class="vazio">Nenhum treino ainda. Toque em <b>Novo treino</b> para montar o primeiro.</div>'}</div>
-
-    <section class="painel">
-      <h3>Som e avisos</h3>
-      <label class="opcao"><span>Volume dos bipes</span><input type="range" id="cfg-volume" min="0" max="1" step="0.05" value="${c.volume}"></label>
-      <label class="opcao"><span>Contagem 3-2-1<small>Três bipes curtos antes de cada troca</small></span><input type="checkbox" id="cfg-contagem" ${c.contagem ? 'checked' : ''}></label>
-      <label class="opcao"><span>Bipe na metade<small>Dois bipes no meio de cada trabalho com 20s ou mais</small></span><input type="checkbox" id="cfg-meio" ${c.meio ? 'checked' : ''}></label>
-      <label class="opcao"><span>Vibrar nas trocas<small>Funciona em Android</small></span><input type="checkbox" id="cfg-vibrar" ${c.vibrar ? 'checked' : ''}></label>
-      <label class="opcao"><span>Falar o nome da etapa<small>Ex.: "Burpee", "Descanso". Use os nomes das etapas</small></span><input type="checkbox" id="cfg-voz" ${c.voz ? 'checked' : ''}></label>
-      <div class="linha-btns"><button class="btn-sec" data-acao="testar-som">Testar som</button></div>
-    </section>
-
-    <section class="painel">
-      <h3>Copiar e colar treinos</h3>
-      <p>Para passar treinos para outro celular: copie o texto aqui, mande para você mesmo (WhatsApp, e-mail) e cole no outro aparelho.</p>
-      <div class="linha-btns">
-        <button class="btn-sec" data-acao="exportar">Mostrar texto dos treinos</button>
-        <button class="btn-sec" data-acao="copiar">Copiar</button>
-        <button class="btn-sec" data-acao="importar">Importar texto colado</button>
-      </div>
-      <textarea id="io-texto" spellcheck="false" placeholder="Cole aqui o texto de treinos e toque em Importar"></textarea>
-      <div class="status" id="io-status" role="status"></div>
-    </section>
-
-    <section class="painel dicas">
-      <h3>Dicas de uso</h3>
-      <ul>
-        <li><b>Instalar no celular:</b> no Android, toque em <i>Instalar app</i> no topo ou use o menu ⋮ → <i>Instalar app</i>. No iPhone (Safari), botão Compartilhar → <i>Adicionar à Tela de Início</i>. Depois de instalado, funciona sem internet.</li>
-        <li><b>iPhone no silencioso não toca bipe.</b> Tire a chave do modo silencioso antes do treino.</li>
-        <li>A tela fica acesa durante o treino. Se bloquear o celular, o navegador pode parar o som.</li>
-        <li>Toque no número grande para pausar e continuar. <b>Pular</b> e <b>Voltar</b> andam uma etapa.</li>
-        <li><b>EMOM:</b> um bloco com uma etapa de 1:00 e N rodadas. Para E2MOM, mude a etapa para 2:00.</li>
-        <li>Os treinos ficam guardados neste navegador. Use “Copiar e colar” para ter cópia.</li>
-      </ul>
-    </section>`;
+    <nav class="rodape">
+      <button data-acao="config">Configurações</button>
+      <button data-acao="privacidade">Privacidade</button>
+    </nav>`;
 }
 $('#v-lista').addEventListener('click', ev => {
   const btn = ev.target.closest('button[data-acao]'); if (!btn) return;
   const id = btn.dataset.id, t = estado.treinos.find(x => x.id === id), acao = btn.dataset.acao;
   if (acao === 'instalar' && promptInstalar){ promptInstalar.prompt(); promptInstalar.userChoice?.finally(() => { promptInstalar = null; renderLista(); }); }
+  else if (acao === 'config') mostrar('config');
+  else if (acao === 'privacidade'){ voltarDe = 'lista'; mostrar('privacidade'); }
   else if (acao === 'iniciar' && t) iniciar(t);
   else if (acao === 'editar' && t) abrirEditor(t);
   else if (acao === 'novo'){
@@ -481,24 +545,194 @@ $('#v-lista').addEventListener('click', ev => {
   else if (acao === 'duplicar' && t){ const c = normalizar(JSON.parse(JSON.stringify(t))); c.nome = (t.nome + ' (cópia)').slice(0, 60);
     estado.treinos.splice(estado.treinos.indexOf(t) + 1, 0, c); salvar(); renderLista(); }
   else if (acao === 'excluir' && t){ if (!confirmado(btn, 'Excluir mesmo?')) return; estado.treinos = estado.treinos.filter(x => x !== t); salvar(); renderLista(); }
-  else if (acao === 'testar-som'){ destravar(); const c = audio(); if (c){ const n = c.currentTime + .05; tocar('tic', n); tocar('tic', n + 1); tocar('tic', n + 2); tocar('vai', n + 3); } vibrar(200); }
+});
+
+/* ---------- configurações ---------- */
+const chave = (id, rotulo, dica) => `<label class="opcao"><span>${rotulo}${dica ? `<small>${dica}</small>` : ''}</span><input type="checkbox" id="cfg-${id}" ${estado.config[id] ? 'checked' : ''}></label>`;
+function htmlPrevia(){
+  const curto = { work: 'Trabalho', rest: 'Descanso', prep: 'Preparo', trans: 'Entre' };
+  return `<div class="previa" aria-hidden="true">${FASES_COR.map(([k]) => `<div style="background:var(--${k});color:var(--${k}-ink)">${curto[k]}</div>`).join('')}</div>`;
+}
+function renderConfig(){
+  const c = estado.config, atual = paletaAtual();
+  $('#v-config').innerHTML = `
+    <div class="topo"><button class="voltar" data-acao="voltar">${IC.voltar} Treinos</button><span class="salvo">Salvo automaticamente</span></div>
+    <h1 class="pagina-titulo">Configurações</h1>
+    <p class="pagina-sub">Tudo fica guardado só neste aparelho.</p>
+
+    <section class="painel">
+      <h3>Cores</h3>
+      <p>A cor de cada fase aparece em tela cheia durante o treino. Escolha um conjunto ou ajuste cada uma.</p>
+      <div class="grade-opcoes">${Object.entries(PALETAS).map(([k, p]) => `
+        <button class="op-card" data-acao="paleta" data-paleta="${k}" aria-pressed="${atual === k}">
+          <span class="amostra">${FASES_COR.map(([f]) => `<i style="background:${p[f]}"></i>`).join('')}</span>${p.nome}</button>`).join('')}
+      </div>
+      ${htmlPrevia()}
+      <hr class="sep">
+      <span class="rotulo">Ajustar cada cor${atual ? '' : ' · personalizada'}</span>
+      ${FASES_COR.map(([k, n]) => `<label class="cor"><span>${n}</span><input type="color" id="cor-${k}" data-cor="${k}" value="${c.cores[k]}" aria-label="Cor de ${n}"></label>`).join('')}
+      <div class="linha-btns"><button class="btn-sec" data-acao="paleta" data-paleta="kairos">Voltar às cores do Kairos</button></div>
+    </section>
+
+    <section class="painel">
+      <h3>Volume e sons</h3>
+      <div><span class="rotulo" style="margin-bottom:6px">Volume dos bipes</span>
+        <div class="vol"><input type="range" id="cfg-volume" min="0" max="1" step="0.05" value="${c.volume}" aria-label="Volume"><output id="vol-num">${Math.round(c.volume * 100)}%</output></div></div>
+      <div><span class="rotulo" style="margin-bottom:8px">Tipo de som · toque para ouvir</span>
+        <div class="grade-opcoes">${Object.entries(ESTILOS).map(([k, e]) => `
+          <button class="op-card" data-acao="estilo" data-estilo="${k}" aria-pressed="${c.estiloSom === k}">${e.nome}<small>${e.dica}</small></button>`).join('')}
+        </div></div>
+      <hr class="sep">
+      <span class="rotulo">Quando tocar</span>
+      ${chave('somTrabalho', 'Início do trabalho', 'Um bipe longo')}
+      ${chave('somDescanso', 'Início do descanso', 'Dois bipes descendo')}
+      <div class="opcao"><span>Contagem regressiva<small>Bipes curtos antes de cada troca</small></span>
+        <div class="seg-ctrl" role="group" aria-label="Contagem regressiva">${[[0, 'Não'], [3, '3 s'], [5, '5 s']].map(([v, r]) =>
+          `<button data-acao="contagem" data-valor="${v}" aria-pressed="${c.contagem === v}">${r}</button>`).join('')}</div></div>
+      ${chave('meio', 'Bipe na metade', 'No meio de cada trabalho com 20 s ou mais')}
+      ${chave('somFim', 'Fim do treino', 'Três bipes de encerramento')}
+      <div class="linha-btns"><button class="btn-sec" data-acao="testar-som">Testar som</button></div>
+    </section>
+
+    <section class="painel">
+      <h3>Durante o treino</h3>
+      ${chave('vibrar', 'Vibrar nas trocas', 'Funciona no Android')}
+      ${chave('voz', 'Falar o nome da etapa', 'Ex.: "Burpee", "Descanso". Use os nomes das etapas')}
+      ${chave('telaLigada', 'Manter a tela acesa', 'Evita que o celular bloqueie no meio do treino')}
+    </section>
+
+    <section class="painel">
+      <h3>Seus dados</h3>
+      <p>Para levar treinos para outro celular: mostre o texto, copie, mande para você mesmo (WhatsApp, e-mail) e cole no outro aparelho.</p>
+      <div class="linha-btns">
+        <button class="btn-sec" data-acao="exportar">Mostrar texto dos treinos</button>
+        <button class="btn-sec" data-acao="copiar">Copiar</button>
+        <button class="btn-sec" data-acao="importar">Importar texto colado</button>
+      </div>
+      <textarea id="io-texto" spellcheck="false" placeholder="Cole aqui o texto de treinos e toque em Importar"></textarea>
+      <div class="status" id="io-status" role="status"></div>
+      <hr class="sep">
+      <p>Apagar remove todos os treinos e configurações deste aparelho e volta aos exemplos. Não tem como desfazer.</p>
+      <div class="linha-btns">
+        <button class="btn-sec btn-perigo" data-acao="apagar">Apagar meus dados</button>
+        <button class="btn-txt" data-acao="privacidade">Política de privacidade</button>
+      </div>
+    </section>
+
+    <section class="painel dicas">
+      <h3>Ajuda</h3>
+      <ul>
+        <li><b>Instalar no celular:</b> no Android, toque em <i>Instalar app</i> ou use o menu ⋮ → <i>Instalar app</i>. No iPhone (Safari), Compartilhar → <i>Adicionar à Tela de Início</i>. Depois de instalado, funciona sem internet.</li>
+        <li><b>iPhone no silencioso não toca bipe.</b> Tire do modo silencioso antes do treino.</li>
+        <li>Se bloquear o celular, o sistema pode parar o som. Deixe <i>Manter a tela acesa</i> ligado.</li>
+        <li>Toque no número grande para pausar e continuar. <b>Pular</b> e <b>Voltar</b> andam uma etapa.</li>
+        <li><b>EMOM:</b> um bloco com uma etapa de 1:00 e N rodadas. Para E2MOM, mude a etapa para 2:00.</li>
+      </ul>
+    </section>
+    <p class="sobre">Kairos Timer · sem conta, sem anúncios, sem rastreamento</p>`;
+}
+function atualizarCoresConfig(){
+  const atual = paletaAtual();
+  $('#v-config').querySelectorAll('[data-acao=paleta][aria-pressed]').forEach(b => b.setAttribute('aria-pressed', b.dataset.paleta === atual));
+  FASES_COR.forEach(([k]) => { const i = $('#cor-' + k); if (i) i.value = estado.config.cores[k]; });
+}
+let voltarDe = 'lista';
+$('#v-config').addEventListener('click', ev => {
+  const btn = ev.target.closest('button[data-acao]'); if (!btn) return;
+  const c = estado.config, acao = btn.dataset.acao;
+  if (acao === 'voltar'){ mostrar('lista'); return; }
+  if (acao === 'privacidade'){ voltarDe = 'config'; mostrar('privacidade'); return; }
+  if (acao === 'paleta'){ const p = PALETAS[btn.dataset.paleta]; FASES_COR.forEach(([k]) => c.cores[k] = p[k]); aplicarCores(); atualizarCoresConfig(); salvar(); }
+  else if (acao === 'estilo'){ c.estiloSom = btn.dataset.estilo; salvar();
+    btn.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === btn)); demonstrar(c.estiloSom); }
+  else if (acao === 'contagem'){ c.contagem = +btn.dataset.valor; salvar();
+    btn.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === btn)); }
+  else if (acao === 'testar-som'){ destravar(); const a = audio(); if (a){ cancelarSons(); const n = a.currentTime + .05; tocar('tic', n); tocar('tic', n + 1); tocar('tic', n + 2); tocar('vai', n + 3); tocar('pausa', n + 4.2); } vibrar(200); }
   else if (acao === 'exportar'){ $('#io-texto').value = JSON.stringify(estado.treinos.map(({ id, ...t }) => ({ ...t, blocos: t.blocos.map(({ id, ...b }) => ({ ...b, etapas: b.etapas.map(({ id, ...e }) => e) })) }))); $('#io-status').textContent = `${estado.treinos.length} treino(s) no texto. Toque em Copiar.`; }
-  else if (acao === 'copiar'){ const ta = $('#io-texto'); if (!ta.value) $('[data-acao=exportar]').click();
+  else if (acao === 'copiar'){ const ta = $('#io-texto'); if (!ta.value) $('#v-config [data-acao=exportar]').click();
     navigator.clipboard?.writeText(ta.value).then(() => { $('#io-status').textContent = 'Texto copiado.'; },
       () => { ta.select(); $('#io-status').textContent = 'Texto selecionado. Use Copiar do celular.'; }) ?? (ta.select()); }
   else if (acao === 'importar'){
     let d; try { d = JSON.parse($('#io-texto').value); } catch (e) { $('#io-status').textContent = 'Esse texto não é de treinos. Cole o texto copiado deste app.'; return; }
     const novos = (Array.isArray(d) ? d : [d]).map(normalizar).filter(Boolean);
     if (!novos.length){ $('#io-status').textContent = 'Nenhum treino encontrado no texto.'; return; }
-    estado.treinos.push(...novos); salvar(); renderLista(); $('#io-status').textContent = `${novos.length} treino(s) importado(s).`;
+    estado.treinos.push(...novos); salvar(); $('#io-status').textContent = `${novos.length} treino(s) importado(s).`;
+  }
+  else if (acao === 'apagar'){
+    if (!confirmado(btn, 'Toque de novo para apagar tudo')) return;
+    try { localStorage.removeItem(CHAVE); } catch (e) {}
+    estado = { treinos: exemplos(), config: normalizarConfig() }; aplicarCores(); renderConfig();
+    $('#io-status').textContent = 'Dados apagados. Os treinos de exemplo voltaram.';
   }
 });
-$('#v-lista').addEventListener('input', ev => {
+$('#v-config').addEventListener('input', ev => {
   const el = ev.target, c = estado.config;
-  if (el.id === 'cfg-volume'){ c.volume = +el.value; if (MASTER) MASTER.gain.value = c.volume; }
-  else if (el.id?.startsWith('cfg-')) c[el.id.slice(4)] = el.checked;
+  if (el.id === 'cfg-volume'){ c.volume = +el.value; if (MASTER) MASTER.gain.value = c.volume; $('#vol-num').textContent = Math.round(c.volume * 100) + '%'; }
+  else if (el.dataset.cor){ c.cores[el.dataset.cor] = el.value; aplicarCores(); }
+  else if (el.type === 'checkbox' && el.id?.startsWith('cfg-')) c[el.id.slice(4)] = el.checked;
   else return;
   salvar();
+});
+$('#v-config').addEventListener('change', ev => {
+  if (ev.target.dataset.cor) atualizarCoresConfig();
+  if (ev.target.id === 'cfg-volume') demonstrar();
+});
+
+/* ---------- privacidade (RGPD / LGPD) ---------- */
+const PRIVACIDADE_DATA = '24 de novembro de 2026';
+function renderPrivacidade(){
+  $('#v-privacidade').innerHTML = `
+    <div class="topo"><button class="voltar" data-acao="voltar">${IC.voltar} ${voltarDe === 'config' ? 'Configurações' : 'Treinos'}</button></div>
+    <article class="legal">
+      <h1 class="pagina-titulo">Privacidade</h1>
+      <p class="pagina-sub">Atualizada em ${PRIVACIDADE_DATA}. Vale para o RGPD (União Europeia) e a LGPD (Brasil).</p>
+      <div class="destaque"><p><b>Resumo:</b> o Kairos Timer não coleta, não recebe e não vende nenhum dado seu. Não tem conta, cadastro, anúncios, cookies de rastreamento nem ferramentas de estatística. Seus treinos ficam só no seu aparelho.</p></div>
+
+      <h2>Quem é o responsável</h2>
+      <p>O Kairos Timer é um app gratuito feito por Jeffrey Reis (Método Kairos) para alunos e treinadores. Dúvidas sobre privacidade podem ser enviadas pela página do projeto: <a href="https://github.com/jeffreyarcanjoreis/kairos-timer/issues" target="_blank" rel="noopener">github.com/jeffreyarcanjoreis/kairos-timer</a>.</p>
+
+      <h2>O que fica guardado no seu aparelho</h2>
+      <ul>
+        <li><b>Seus treinos</b> (nomes, blocos, tempos) e <b>suas configurações</b> (cores, volume, sons). Ficam no armazenamento local do navegador, dentro do seu celular.</li>
+        <li><b>Uma cópia dos arquivos do app</b>, para ele abrir sem internet. São só os arquivos do próprio app, sem nenhum dado seu.</li>
+      </ul>
+      <p>Nada disso é enviado para nós nem para ninguém. Esse armazenamento existe só para o app funcionar como você pediu, por isso não precisa de aviso de cookies.</p>
+
+      <h2>O que não fazemos</h2>
+      <ul>
+        <li>Não pedimos nome, e-mail, telefone, idade ou dados de saúde.</li>
+        <li>Não usamos localização, câmera, microfone ou contatos.</li>
+        <li>Não usamos Google Analytics, pixel do Facebook nem qualquer rastreador.</li>
+        <li>As fontes do app vêm junto com ele. Não carregamos nada do Google nem de outros serviços.</li>
+      </ul>
+
+      <h2>Hospedagem</h2>
+      <p>Os arquivos do app são entregues pelo GitHub Pages (GitHub, Inc., Estados Unidos). Como acontece com qualquer site, o servidor do GitHub recebe dados técnicos da conexão, como o endereço IP e o tipo de navegador, para entregar a página e proteger o serviço. Não temos acesso a esses registros. O GitHub explica como os trata na <a href="https://docs.github.com/pt/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">declaração de privacidade do GitHub</a>. Depois de instalado, o app abre sem precisar do servidor; ele só é consultado para buscar atualizações.</p>
+
+      <h2>Voz e vibração</h2>
+      <p>Se você ligar <i>Falar o nome da etapa</i>, o app usa o leitor de voz do seu próprio sistema. Em alguns aparelhos esse leitor pode usar um serviço de voz do fabricante (Google, Apple ou Microsoft) para pronunciar o texto. Se preferir evitar, deixe essa opção desligada. A vibração é feita pelo próprio aparelho.</p>
+
+      <h2>Copiar e colar treinos</h2>
+      <p>O texto de treinos só sai do app quando você mesmo copia e envia, por exemplo, pelo WhatsApp. Nesse caso vale a política do serviço que você usar.</p>
+
+      <h2>Seus direitos</h2>
+      <p>Pelo RGPD e pela LGPD você tem direito de acessar, corrigir, levar e apagar seus dados. Como os dados ficam só com você, você exerce esses direitos direto no app:</p>
+      <ul>
+        <li><b>Ver e levar:</b> Configurações → Seus dados → <i>Mostrar texto dos treinos</i>.</li>
+        <li><b>Corrigir:</b> edite o treino.</li>
+        <li><b>Apagar:</b> Configurações → Seus dados → <i>Apagar meus dados</i>. Desinstalar o app ou limpar os dados do site no navegador também apaga tudo.</li>
+      </ul>
+      <p>Se achar que algo está errado, você pode reclamar à autoridade de proteção de dados do seu país: a CNPD em Portugal ou a ANPD no Brasil.</p>
+
+      <h2>Crianças</h2>
+      <p>O app não coleta dados de ninguém, inclusive de crianças e adolescentes.</p>
+
+      <h2>Mudanças nesta política</h2>
+      <p>Se o app passar a tratar algum dado, esta página será atualizada antes, com a nova data no topo.</p>
+    </article>`;
+}
+$('#v-privacidade').addEventListener('click', ev => {
+  if (ev.target.closest('[data-acao=voltar]')) mostrar(voltarDe);
 });
 
 /* ---------- editor ---------- */
@@ -661,7 +895,7 @@ function tique(){
 }
 function finalizar(){
   clearInterval(R.timer); R.rodando = false; R.terminou = true; R.acum = R.linha.total;
-  if (R.evIdx < R.eventos.length){ R.evIdx = R.eventos.length; tocar('fim'); }
+  if (R.evIdx < R.eventos.length){ R.evIdx = R.eventos.length; if (estado.config.somFim) tocar('fim'); }
   vibrar([200, 100, 200, 100, 500]); falar('Treino concluído'); soltarTela(); render();
 }
 function sair(){
@@ -741,7 +975,7 @@ window.addEventListener('appinstalled', () => { promptInstalar = null; if (tela 
 if ('serviceWorker' in navigator && document.querySelector('link[rel="manifest"]'))
   navigator.serviceWorker.register('sw.js').catch(() => {});
 
-carregar(); mostrar('lista');
+carregar(); aplicarCores(); mostrar('lista');
 })();
 </script>
 

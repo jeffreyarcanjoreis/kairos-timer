@@ -6,6 +6,7 @@ Saída: index.html, manifest.webmanifest, sw.js e icons/*.png (sem dependências
 import hashlib
 import json
 import math
+import re
 import struct
 import zlib
 from pathlib import Path
@@ -83,12 +84,20 @@ CABECA = """<!doctype html>
 <meta name="apple-mobile-web-app-title" content="Kairos Timer">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<style>
+@font-face{font-family:'Archivo';font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;src:url('fonts/archivo-latin-wdth.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Archivo';font-style:normal;font-weight:300 600;font-display:swap;src:url('fonts/archivo-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:300 500;font-display:swap;src:url('fonts/fraunces-latin.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:300 500;font-display:swap;src:url('fonts/fraunces-latin-ext.woff2') format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
 """
 
 
 def gerar_pagina():
     corpo = (RAIZ / "app.html").read_text(encoding="utf-8")
+    # privacidade: no app publicado as fontes vêm da pasta fonts/, sem nenhum pedido ao Google
+    corpo = re.sub(r'<link rel="(?:preconnect|stylesheet)" href="https://fonts\.(?:googleapis|gstatic)\.com[^>]*>\n', "", corpo)
+    assert "fonts.googleapis" not in corpo and "fonts.gstatic" not in corpo, "sobrou link do Google Fonts"
     # o <title>, os <meta> e o <style> do app ficam no <head>; o resto vai no <body>
     corte = corpo.index("<main>")
     pagina = CABECA + corpo[:corte] + "</head>\n<body>\n" + corpo[corte:] + "\n</body>\n</html>\n"
@@ -116,30 +125,22 @@ MANIFESTO = {
 
 SW = """// Gerado por montar.py — não editar à mão.
 const VERSAO = 'kairos-timer-%s';
-const ARQUIVOS = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
-const FONTES = 'kairos-timer-fontes';
+const ARQUIVOS = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png',
+  './fonts/archivo-latin-wdth.woff2', './fonts/archivo-latin-ext.woff2', './fonts/fraunces-latin.woff2', './fonts/fraunces-latin-ext.woff2'];
 
 self.addEventListener('install', ev => {
   ev.waitUntil(caches.open(VERSAO).then(c => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', ev => {
+  // apaga versões antigas, inclusive o cache de fontes do Google usado até 24/11/2026
   ev.waitUntil(caches.keys()
-    .then(ks => Promise.all(ks.filter(k => k !== VERSAO && k !== FONTES).map(k => caches.delete(k))))
+    .then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', ev => {
   const req = ev.request;
   if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    ev.respondWith(caches.open(FONTES).then(async c => {
-      const salvo = await c.match(req);
-      const rede = fetch(req).then(r => { if (r.ok || r.type === 'opaque') c.put(req, r.clone()); return r; }).catch(() => salvo);
-      return salvo || rede;
-    }));
-    return;
-  }
-  if (url.origin !== self.location.origin) return;
+  if (new URL(req.url).origin !== self.location.origin) return;
   ev.respondWith(caches.match(req, { ignoreSearch: true }).then(salvo => salvo ||
     fetch(req).catch(() => req.mode === 'navigate' ? caches.match('./index.html') : Response.error())));
 });
