@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Kairos Timer">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<title>Kairos Timer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#14130f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..400&display=swap">
+<style>
+/* Layout: app de uma tela — Treinos → Editor → Cronômetro. Identidade Kairos (fundo void, texto bone,
+   argila/dourado/sálvia); no cronômetro, a cor da fase ocupa a metade de cima para ser lida de longe. */
+:root{
+  color-scheme: dark;
+  --bg:#14130f; --surface:#1c1a14; --surface-2:#26231b; --line:rgba(240,235,224,.14);
+  --fg:#f0ebe0; --muted:#a39c8c; --gold:#c89b4a; --gold-light:#dfb86e; --sage-light:#a8b28a;
+  --accent:#c2613f; --on-accent:#ffffff;
+  --work:#c2613f; --work-ink:#0d0c09;
+  --rest:#6b7355; --rest-ink:#f0ebe0;
+  --prep:#c89b4a; --prep-ink:#14130f;
+  --trans:#d4cdbd; --trans-ink:#14130f;
+  --done:#a8b28a; --done-ink:#14130f;
+  --font-serif:'Fraunces',Georgia,serif;
+  --font-display:'Archivo','Arial Narrow',Arial,sans-serif;
+  --font-body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --r:14px;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+button:disabled{opacity:.35;cursor:default}
+:focus-visible{outline:2px solid var(--prep);outline-offset:2px}
+.rotulo{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+.app{max-width:720px;margin:0 auto;padding-block:20px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- botões ---------- */
+.btn-prim{background:var(--accent);color:var(--on-accent);font-weight:600;letter-spacing:.03em;border-radius:999px;padding:12px 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-sec{background:transparent;border:1px solid rgba(240,235,224,.35);font-weight:600;border-radius:999px;padding:11px 18px}
+.btn-prim:hover{background:#d06f4b}
+.btn-txt{color:var(--muted);font-weight:600;padding:12px 10px;border-radius:10px}
+.btn-txt:hover,.btn-sec:hover{background:var(--line)}
+.armado{background:#8e3b22 !important;color:#fff !important;border-color:transparent !important}
+.ic{width:38px;height:38px;border-radius:10px;display:inline-grid;place-items:center;color:var(--muted)}
+.ic:hover:not(:disabled){background:var(--surface-2);color:var(--fg)}
+.ic svg{width:20px;height:20px}
+
+/* ---------- lista ---------- */
+.cabeca{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.cabeca h1{font-family:var(--font-serif);font-weight:400;font-size:44px;line-height:1;margin:4px 0 0;letter-spacing:-.02em}
+.marca{font-family:var(--font-serif);font-size:20px;letter-spacing:-.01em}.marca span{color:var(--accent)}
+.cabeca .rotulo{color:var(--gold);letter-spacing:.13em}
+.cards{display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px}
+.card-topo{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.card h2{margin:0;font-family:var(--font-serif);font-size:22px;font-weight:400;letter-spacing:-.01em;min-width:0;overflow-wrap:anywhere}
+.card-tempo{font-family:var(--font-display);font-stretch:62%;font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--gold-light);white-space:nowrap}
+.resumo{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:15px}
+.resumo li{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.resumo em{font-style:normal;color:var(--muted);font-variant-numeric:tabular-nums}
+.resumo .pausa-entre{color:var(--muted);font-size:13px;padding-left:16px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;transform:translateY(-1px)}
+.card-acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card-acoes .btn-prim{flex:1 1 140px;font-size:18px}
+.vazio{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+
+.painel{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:14px}
+.painel h3{margin:0;font-family:var(--font-serif);font-size:24px;font-weight:400;letter-spacing:-.01em}
+.painel p{margin:0;color:var(--muted);font-size:15px}
+.opcao{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:4px}
+.opcao span small{display:block;color:var(--muted);font-size:13px}
+.opcao input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.opcao input[type=range]{width:160px;accent-color:var(--accent)}
+textarea{width:100%;min-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:13px/1.4 ui-monospace,Consolas,monospace;resize:vertical}
+.linha-btns{display:flex;gap:8px;flex-wrap:wrap}
+.status{font-size:14px;color:var(--gold-light);min-height:1.2em}
+.dicas ul{margin:0;padding-left:18px;color:var(--muted);font-size:15px;display:grid;gap:6px}
+.dicas b{color:var(--fg)}
+
+/* ---------- editor ---------- */
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.voltar{font-weight:600;padding:8px 10px 8px 4px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
+.voltar svg{width:20px;height:20px}
+.salvo{font-size:13px;color:var(--muted)}
+.campo{display:grid;gap:6px;margin-bottom:16px}
+.inp{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+.inp:focus{border-color:var(--muted);outline:none}
+.titulo-inp{font-family:var(--font-serif);font-size:24px;font-weight:400}
+.config-ini{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:16px}
+
+.tempo{display:inline-flex;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
+.pm{width:40px;height:42px;font-size:22px;font-weight:600;display:grid;place-items:center}
+.pm:hover{background:var(--surface-2)}
+.t-in{width:64px;text-align:center;background:transparent;border:0;font-family:var(--font-display);font-stretch:62%;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;padding:0}
+.t-in:focus{outline:none;background:var(--surface-2)}
+
+.bloco{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:12px;margin-bottom:14px}
+.bloco-topo{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bloco-num{font-family:var(--font-serif);font-size:22px;font-weight:400;letter-spacing:-.01em}
+.bloco-acoes{display:flex;gap:2px}
+.bloco-linha{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.bloco-linha > div{display:grid;gap:6px}
+.dur strong{font-family:var(--font-display);font-stretch:62%;font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.etapas{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.etapa{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;background:var(--surface-2);border-radius:12px;padding:8px;border-left:4px solid var(--work)}
+.etapa[data-tipo=descanso]{border-left-color:var(--rest)}
+.tipo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-radius:8px;background:var(--work);color:var(--on-accent);min-width:96px}
+.etapa[data-tipo=descanso] .tipo{background:var(--rest);color:var(--rest-ink)}
+.etapa .inp{padding:9px 10px;background:var(--bg)}
+@media (max-width:520px){
+  .etapa{grid-template-columns:auto 1fr auto;grid-template-areas:"tipo tempo del" "nome nome nome"}
+  .etapa .tipo{grid-area:tipo}.etapa .tempo{grid-area:tempo;justify-self:end}.etapa .del{grid-area:del}.etapa .inp{grid-area:nome}
+}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:600;font-size:15px}
+.chip:hover{border-color:var(--muted)}
+.chip small{color:var(--muted);font-weight:500;margin-left:4px}
+.check{display:flex;gap:10px;align-items:center;font-size:15px;color:var(--muted)}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+.entre{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:12px}
+.entre .rotulo{color:var(--gold-light)}
+.add-bloco{display:grid;gap:10px;margin-top:6px}
+
+.barra-fixa{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(20,19,15,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);
+  padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.barra-fixa > div{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.barra-fixa strong{font-family:var(--font-display);font-stretch:62%;font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.barra-fixa .btn-prim{font-size:18px;padding:14px 22px}
+
+/* ---------- cronômetro ---------- */
+.runner{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg);
+  --fase:var(--prep);--fase-ink:var(--prep-ink)}
+.runner[data-fase=trabalho]{--fase:var(--work);--fase-ink:var(--work-ink)}
+.runner[data-fase=descanso]{--fase:var(--rest);--fase-ink:var(--rest-ink)}
+.runner[data-fase=transicao]{--fase:var(--trans);--fase-ink:var(--trans-ink)}
+.runner[data-fase=fim]{--fase:var(--done);--fase-ink:var(--done-ink)}
+.r-topo{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;
+  background:var(--fase);color:var(--fase-ink);transition:background-color .25s,filter .25s;
+  padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-bottom:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.runner.pausado .r-topo{filter:saturate(.35) brightness(.75)}
+.r-meta{display:flex;flex-direction:column;gap:2px;font-weight:600;font-size:17px;opacity:.85}
+.r-meta span:empty{display:none}
+.r-nome{font-family:var(--font-display);font-stretch:62%;font-weight:800;font-size:clamp(30px,9vw,64px);line-height:1;text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere;max-width:100%}
+.r-tempo{font-family:var(--font-display);font-stretch:62%;font-weight:800;font-variant-numeric:tabular-nums;line-height:.9;letter-spacing:-.01em;
+  font-size:min(40vw,30vh);color:inherit;padding:0 8px;border-radius:16px}
+.r-tempo.longo{font-size:min(27vw,24vh)}
+.runner.pausado .r-tempo{animation:pisca 1.2s steps(2,start) infinite}
+@keyframes pisca{to{opacity:.35}}
+.r-barra{width:min(520px,100%);height:10px;border-radius:99px;background:rgba(0,0,0,.22);overflow:hidden}
+.r-barra span{display:block;height:100%;width:0;background:var(--fase-ink);opacity:.85}
+.r-aviso{font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.08em}
+
+.r-painel{flex:none;background:var(--bg);display:grid;gap:12px;
+  padding-top:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.r-painel > *{width:100%;max-width:640px;margin-inline:auto}
+.r-prox{font-size:17px;font-weight:600;min-height:1.4em;overflow-wrap:anywhere}
+.r-prox b{color:var(--gold-light)}
+.r-faixa{position:relative;display:flex;gap:1px;height:14px;border-radius:4px;overflow:hidden;background:var(--line)}
+.r-faixa i{display:block;min-width:1px;background:var(--work)}
+.r-faixa i.descanso{background:var(--rest)}
+.r-faixa i.transicao{background:var(--trans)}
+.r-faixa i.preparo{background:var(--prep)}
+.r-faixa i.feito{opacity:.3}
+.r-marca{position:absolute;top:-2px;bottom:-2px;width:3px;background:var(--fg);box-shadow:0 0 0 2px var(--bg);left:0;border-radius:2px}
+.r-totais{display:flex;justify-content:space-between;gap:12px}
+.r-totais strong{font-family:var(--font-display);font-stretch:62%;font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.r-totais div:last-child{text-align:right}
+.r-ctrl{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px}
+.r-btn{background:var(--surface-2);border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;font-size:14px}
+.r-btn svg{width:26px;height:26px}
+.r-btn.grande{background:var(--fg);color:var(--bg);font-size:17px}
+.r-btn.grande svg{width:34px;height:34px}
+.r-sair{color:var(--muted);font-weight:600;padding:8px;border-radius:10px;justify-self:center;width:auto}
+@media (orientation:landscape) and (max-height:560px){
+  .runner{flex-direction:row}
+  .r-topo{padding-top:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  .r-tempo{font-size:min(26vw,44vh)}
+  .r-tempo.longo{font-size:min(19vw,34vh)}
+  .r-painel{width:min(42%,380px);overflow-y:auto;align-content:center;padding-top:calc(14px + env(safe-area-inset-top,0px));padding-left:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .runner.pausado .r-tempo{animation:none}
+  .r-topo{transition:none}
+}
+</style>
+
+</head>
+<body>
+<main>
+  <section id="v-lista" class="app"></section>
+  <section id="v-editor" hidden>
+    <div class="app" id="editor"></div>
+    <div class="barra-fixa"><div>
+      <div><span class="rotulo">Duração total</span><strong id="barra-total">0:00</strong></div>
+      <button class="btn-prim" data-acao="iniciar-edit" id="btn-iniciar-edit">Iniciar treino</button>
+    </div></div>
+  </section>
+  <section id="v-rodando" class="runner" data-fase="preparo" hidden>
+    <div class="r-topo">
+      <div class="r-meta"><span id="r-bloco"></span><span id="r-rodada"></span></div>
+      <div class="r-nome" id="r-nome">Prepare-se</div>
+      <button class="r-tempo" id="r-tempo" aria-label="Pausar ou continuar">0:10</button>
+      <div class="r-barra"><span id="r-barra"></span></div>
+      <div class="r-aviso" id="r-aviso" hidden>Pausado · toque no tempo para continuar</div>
+    </div>
+    <div class="r-painel">
+      <div class="r-prox" id="r-prox"></div>
+      <div class="r-faixa" id="r-faixa"></div>
+      <div class="r-totais">
+        <div><span class="rotulo">Decorrido</span><strong id="r-dec">0:00</strong></div>
+        <div><span class="rotulo">Restante</span><strong id="r-rest">0:00</strong></div>
+      </div>
+      <div class="r-ctrl">
+        <button class="r-btn" id="r-voltar"></button>
+        <button class="r-btn grande" id="r-play"></button>
+        <button class="r-btn" id="r-pular"></button>
+      </div>
+      <button class="r-sair" id="r-sair">Encerrar treino</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, el = document) => el.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmt(s){ s = Math.max(0, Math.round(s)); const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), r = s%60;
+  return h ? `${h}:${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}` : `${m}:${String(r).padStart(2,'0')}`; }
+const fmtCont = rest => fmt(Math.ceil(rest - 1e-6));
+function lerTempo(txt){ txt = String(txt).trim().replace(/[.,;]/g, ':').replace(/\s/g,''); if (!txt) return null;
+  if (txt.includes(':')){ const p = txt.split(':').map(x => parseInt(x || '0', 10)); if (p.some(isNaN)) return null;
+    return p.length === 3 ? p[0]*3600 + p[1]*60 + p[2] : p[0]*60 + p[1]; }
+  const m = txt.match(/^(\d+)m(\d*)s?$/i); if (m) return parseInt(m[1],10)*60 + (parseInt(m[2]||'0',10));
+  const n = parseInt(txt, 10); return isNaN(n) ? null : n; }
+const passo = v => v < 120 ? 5 : v < 600 ? 15 : 30;
+
+const IC = {
+  voltar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  cima:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
+  baixo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  dup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  lixo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4.5" height="16" rx="1.2"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.2"/></svg>',
+  ant:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18l-7-6 7-6M7 6v12"/></svg>',
+  prox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l7 6-7 6M17 6v12"/></svg>',
+  repetir:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5"/></svg>'
+};
+
+/* ================= dados ================= */
+const CHAVE = 'cronometro-treinos-v1';
+const CONFIG_PADRAO = { volume: 0.9, contagem: true, meio: false, vibrar: true, voz: false };
+const etapa = (nome, tipo, seg) => ({ id: uid(), nome, tipo, seg });
+const bloco = (nome, rodadas, etapas, descansoDepois = 0, cortarUltimoDescanso = false) =>
+  ({ id: uid(), nome, rodadas, etapas, descansoDepois, cortarUltimoDescanso });
+const MODELOS_BLOCO = {
+  intervalado: () => bloco('Intervalado 40/20', 5, [etapa('', 'trabalho', 40), etapa('', 'descanso', 20)], 60),
+  tabata:      () => bloco('Tabata', 8, [etapa('', 'trabalho', 20), etapa('', 'descanso', 10)], 60),
+  emom:        () => bloco('EMOM', 10, [etapa('', 'trabalho', 60)], 60),
+  direto:      () => bloco('Direto', 1, [etapa('', 'trabalho', 120)], 60),
+  circuito:    () => bloco('Circuito', 3, [etapa('Exercício 1','trabalho',40), etapa('','descanso',15), etapa('Exercício 2','trabalho',40), etapa('','descanso',15), etapa('Exercício 3','trabalho',40), etapa('','descanso',15)], 90)
+};
+function exemplos(){ return [
+  { id: uid(), nome: 'Tabata clássico', preparo: 10, blocos: [ bloco('Tabata', 8, [etapa('', 'trabalho', 20), etapa('', 'descanso', 10)]) ] },
+  { id: uid(), nome: 'EMOM 10 minutos', preparo: 10, blocos: [ bloco('EMOM', 10, [etapa('', 'trabalho', 60)]) ] },
+  { id: uid(), nome: 'Treino em 3 blocos', preparo: 10, blocos: [
+    bloco('Bloco 40/20', 5, [etapa('', 'trabalho', 40), etapa('', 'descanso', 20)], 60),
+    bloco('Bloco 30/30', 10, [etapa('', 'trabalho', 30), etapa('', 'descanso', 30)], 90),
+    bloco('Direto', 1, [etapa('', 'trabalho', 120)])
+  ]}
+]; }
+function normalizar(t){
+  if (!t || !Array.isArray(t.blocos)) return null;
+  const num = (v, min, max, def) => { v = Math.round(Number(v)); return Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : def; };
+  const blocos = t.blocos.filter(b => b && Array.isArray(b.etapas) && b.etapas.length).map(b => ({
+    id: uid(), nome: String(b.nome ?? '').slice(0, 40), rodadas: num(b.rodadas, 1, 99, 1),
+    descansoDepois: num(b.descansoDepois, 0, 3600, 0), cortarUltimoDescanso: !!b.cortarUltimoDescanso,
+    etapas: b.etapas.map(e => ({ id: uid(), nome: String(e?.nome ?? '').slice(0, 40), tipo: e?.tipo === 'descanso' ? 'descanso' : 'trabalho', seg: num(e?.seg, 1, 5999, 30) }))
+  }));
+  if (!blocos.length) return null;
+  return { id: uid(), nome: String(t.nome || 'Treino').slice(0, 60), preparo: num(t.preparo, 0, 300, 10), blocos };
+}
+let estado = { treinos: [], config: { ...CONFIG_PADRAO } };
+function carregar(){
+  try {
+    const raw = localStorage.getItem(CHAVE);
+    if (raw){ const d = JSON.parse(raw);
+      estado.treinos = (d.treinos || []).map(normalizar).filter(Boolean);
+      estado.config = { ...CONFIG_PADRAO, ...(d.config || {}) }; return; }
+  } catch (e) {}
+  estado.treinos = exemplos();
+}
+function salvar(){ try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) {} }
+const nomeEtapa = e => e.nome?.trim() || (e.tipo === 'trabalho' ? 'Trabalho' : 'Descanso');
+const nomeBloco = (b, i) => b.nome?.trim() || `Bloco ${i + 1}`;
+
+/* ================= linha do tempo ================= */
+function montarLinha(t){
+  const segs = [];
+  if (t.preparo > 0) segs.push({ tipo: 'preparo', nome: 'Prepare-se', seg: t.preparo, bi: -1 });
+  const nb = t.blocos.length;
+  t.blocos.forEach((b, bi) => {
+    for (let r = 1; r <= b.rodadas; r++){
+      b.etapas.forEach((e, ei) => {
+        if (!(e.seg > 0)) return;
+        if (b.cortarUltimoDescanso && r === b.rodadas && e.tipo === 'descanso' && b.etapas.slice(ei).every(x => x.tipo === 'descanso')) return;
+        segs.push({ tipo: e.tipo, nome: nomeEtapa(e), seg: e.seg, bi, nb, bloco: nomeBloco(b, bi), rodada: r, rodadas: b.rodadas });
+      });
+    }
+    if (b.descansoDepois > 0 && bi < nb - 1)
+      segs.push({ tipo: 'transicao', nome: 'Descanso entre blocos', seg: b.descansoDepois, bi, nb, bloco: nomeBloco(b, bi), proximo: nomeBloco(t.blocos[bi + 1], bi + 1) });
+  });
+  let acc = 0; segs.forEach(s => { s.ini = acc; acc += s.seg; s.fim = acc; });
+  return { segs, total: acc };
+}
+const duracaoBloco = b => montarLinha({ preparo: 0, blocos: [{ ...b, descansoDepois: 0 }] }).total;
+function resumoBloco(b){
+  const es = b.etapas, s = v => v < 60 ? v + 's' : fmt(v);
+  if (es.length === 1){ const e = es[0];
+    if (b.rodadas === 1) return `${fmt(e.seg)} direto`;
+    if (e.seg === 60 && e.tipo === 'trabalho') return `EMOM · ${b.rodadas} min`;
+    return `${b.rodadas} × ${s(e.seg)}`; }
+  return `${b.rodadas} × ${es.map(e => s(e.seg)).join(' / ')}`;
+}
+function montarEventos(linha){
+  const cfg = estado.config, ev = [];
+  linha.segs.forEach((s, i) => {
+    if (!(i === 0 && s.tipo === 'preparo')) ev.push({ t: s.ini, som: s.tipo === 'trabalho' ? 'vai' : 'pausa' });
+    if (cfg.meio && s.tipo === 'trabalho' && s.seg >= 20) ev.push({ t: s.ini + s.seg / 2, som: 'meio' });
+    if (cfg.contagem) for (let k = 3; k >= 1; k--) if (s.fim - k > s.ini + 0.5) ev.push({ t: s.fim - k, som: 'tic' });
+  });
+  ev.push({ t: linha.total, som: 'fim' });
+  return ev.sort((a, b) => a.t - b.t);
+}
+
+/* ================= som ================= */
+let AC = null, MASTER = null, sons = [];
+const SONS = {
+  tic:   [[880, 0, .13]],
+  vai:   [[1320, 0, .6]],
+  pausa: [[740, 0, .22], [540, .27, .38]],
+  meio:  [[990, 0, .09], [990, .16, .09]],
+  fim:   [[1320, 0, .2], [1320, .3, .2], [1760, .6, .9]]
+};
+function audio(){
+  try {
+    if (!AC){ const C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
+      AC = new C(); MASTER = AC.createGain(); MASTER.connect(AC.destination); }
+    MASTER.gain.value = estado.config.volume;
+    if (AC.state !== 'running') AC.resume().catch(() => {});
+    return AC;
+  } catch (e) { return null; }
+}
+function destravar(){ const c = audio(); if (!c) return;
+  try { const s = c.createBufferSource(); s.buffer = c.createBuffer(1, 1, 22050); s.connect(c.destination); s.start(0); } catch (e) {} }
+function tocar(nome, quando){
+  const c = audio(); if (!c) return; const t0 = quando ?? c.currentTime;
+  for (const [f, off, dur] of SONS[nome]){
+    const o = c.createOscillator(), g = c.createGain(), a = t0 + off;
+    o.type = 'square'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, a); g.gain.linearRampToValueAtTime(0.3, a + 0.008);
+    g.gain.setValueAtTime(0.3, a + dur - 0.03); g.gain.linearRampToValueAtTime(0.0001, a + dur);
+    o.connect(g); g.connect(MASTER); o.start(a); o.stop(a + dur + 0.02);
+    sons.push({ o, g, fim: a + dur + 0.05 });
+  }
+}
+function cancelarSons(){ for (const s of sons){ try { s.g.disconnect(); } catch (e) {} try { s.o.stop(); } catch (e) {} } sons = []; }
+function vibrar(p){ if (estado.config.vibrar && navigator.vibrate) try { navigator.vibrate(p); } catch (e) {} }
+function falar(txt){
+  if (!estado.config.voz || !('speechSynthesis' in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'pt-BR'; u.rate = 1.05; speechSynthesis.speak(u); } catch (e) {}
+}
+let wake = null;
+async function pedirTelaLigada(){ try { if ('wakeLock' in navigator && document.visibilityState === 'visible') wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
+function soltarTela(){ try { wake?.release(); } catch (e) {} wake = null; }
+
+/* ================= telas ================= */
+let tela = 'lista';
+function mostrar(nome){
+  tela = nome;
+  $('#v-lista').hidden = nome !== 'lista'; $('#v-editor').hidden = nome !== 'editor'; $('#v-rodando').hidden = nome !== 'rodando';
+  if (nome === 'lista') renderLista();
+  if (nome !== 'rodando') window.scrollTo(0, 0);
+}
+
+/* confirmação em dois toques (o visualizador não mostra confirm()) */
+function confirmado(btn, texto = 'Toque de novo'){
+  if (btn.classList.contains('armado')) return true;
+  const orig = btn.innerHTML; btn.classList.add('armado'); btn.textContent = texto;
+  setTimeout(() => { if (btn.isConnected){ btn.classList.remove('armado'); btn.innerHTML = orig; } }, 3000);
+  return false;
+}
+
+/* ---------- lista ---------- */
+function renderLista(){
+  const c = estado.config;
+  const cards = estado.treinos.map(t => {
+    const total = montarLinha(t).total;
+    const itens = t.blocos.map((b, i) => `<li><span class="dot"></span>${esc(nomeBloco(b, i))} <em>${resumoBloco(b)}</em></li>` +
+      (b.descansoDepois > 0 && i < t.blocos.length - 1 ? `<li class="pausa-entre">descanso ${fmt(b.descansoDepois)}</li>` : '')).join('');
+    return `<article class="card">
+      <div class="card-topo"><h2>${esc(t.nome)}</h2><span class="card-tempo">${fmt(total)}</span></div>
+      <ul class="resumo">${itens}</ul>
+      <div class="card-acoes">
+        <button class="btn-prim" data-acao="iniciar" data-id="${t.id}" ${total ? '' : 'disabled'}>${IC.play.replace('<svg', '<svg width="20" height="20"')} Iniciar</button>
+        <button class="btn-sec" data-acao="editar" data-id="${t.id}">Editar</button>
+        <button class="btn-txt" data-acao="duplicar" data-id="${t.id}">Duplicar</button>
+        <button class="btn-txt" data-acao="excluir" data-id="${t.id}">Excluir</button>
+      </div></article>`;
+  }).join('');
+  $('#v-lista').innerHTML = `
+    <header class="cabeca">
+      <div><span class="marca">Kair<span>o</span>s Timer</span><span class="rotulo" style="margin-top:14px">Cronômetro de intervalos</span><h1>Treinos</h1></div>
+      <div class="linha-btns">
+        <button class="btn-sec" data-acao="instalar" ${promptInstalar ? '' : 'hidden'}>Instalar app</button>
+        <button class="btn-prim" data-acao="novo">+ Novo treino</button>
+      </div>
+    </header>
+    <div class="cards">${cards || '<div class="vazio">Nenhum treino ainda. Toque em <b>Novo treino</b> para montar o primeiro.</div>'}</div>
+
+    <section class="painel">
+      <h3>Som e avisos</h3>
+      <label class="opcao"><span>Volume dos bipes</span><input type="range" id="cfg-volume" min="0" max="1" step="0.05" value="${c.volume}"></label>
+      <label class="opcao"><span>Contagem 3-2-1<small>Três bipes curtos antes de cada troca</small></span><input type="checkbox" id="cfg-contagem" ${c.contagem ? 'checked' : ''}></label>
+      <label class="opcao"><span>Bipe na metade<small>Dois bipes no meio de cada trabalho com 20s ou mais</small></span><input type="checkbox" id="cfg-meio" ${c.meio ? 'checked' : ''}></label>
+      <label class="opcao"><span>Vibrar nas trocas<small>Funciona em Android</small></span><input type="checkbox" id="cfg-vibrar" ${c.vibrar ? 'checked' : ''}></label>
+      <label class="opcao"><span>Falar o nome da etapa<small>Ex.: "Burpee", "Descanso". Use os nomes das etapas</small></span><input type="checkbox" id="cfg-voz" ${c.voz ? 'checked' : ''}></label>
+      <div class="linha-btns"><button class="btn-sec" data-acao="testar-som">Testar som</button></div>
+    </section>
+
+    <section class="painel">
+      <h3>Copiar e colar treinos</h3>
+      <p>Para passar treinos para outro celular: copie o texto aqui, mande para você mesmo (WhatsApp, e-mail) e cole no outro aparelho.</p>
+      <div class="linha-btns">
+        <button class="btn-sec" data-acao="exportar">Mostrar texto dos treinos</button>
+        <button class="btn-sec" data-acao="copiar">Copiar</button>
+        <button class="btn-sec" data-acao="importar">Importar texto colado</button>
+      </div>
+      <textarea id="io-texto" spellcheck="false" placeholder="Cole aqui o texto de treinos e toque em Importar"></textarea>
+      <div class="status" id="io-status" role="status"></div>
+    </section>
+
+    <section class="painel dicas">
+      <h3>Dicas de uso</h3>
+      <ul>
+        <li><b>Instalar no celular:</b> no Android, toque em <i>Instalar app</i> no topo ou use o menu ⋮ → <i>Instalar app</i>. No iPhone (Safari), botão Compartilhar → <i>Adicionar à Tela de Início</i>. Depois de instalado, funciona sem internet.</li>
+        <li><b>iPhone no silencioso não toca bipe.</b> Tire a chave do modo silencioso antes do treino.</li>
+        <li>A tela fica acesa durante o treino. Se bloquear o celular, o navegador pode parar o som.</li>
+        <li>Toque no número grande para pausar e continuar. <b>Pular</b> e <b>Voltar</b> andam uma etapa.</li>
+        <li><b>EMOM:</b> um bloco com uma etapa de 1:00 e N rodadas. Para E2MOM, mude a etapa para 2:00.</li>
+        <li>Os treinos ficam guardados neste navegador. Use “Copiar e colar” para ter cópia.</li>
+      </ul>
+    </section>`;
+}
+$('#v-lista').addEventListener('click', ev => {
+  const btn = ev.target.closest('button[data-acao]'); if (!btn) return;
+  const id = btn.dataset.id, t = estado.treinos.find(x => x.id === id), acao = btn.dataset.acao;
+  if (acao === 'instalar' && promptInstalar){ promptInstalar.prompt(); promptInstalar.userChoice?.finally(() => { promptInstalar = null; renderLista(); }); }
+  else if (acao === 'iniciar' && t) iniciar(t);
+  else if (acao === 'editar' && t) abrirEditor(t);
+  else if (acao === 'novo'){
+    const n = { id: uid(), nome: 'Novo treino', preparo: 10, blocos: [MODELOS_BLOCO.intervalado()] };
+    n.blocos[0].descansoDepois = 0; estado.treinos.unshift(n); salvar(); abrirEditor(n);
+  }
+  else if (acao === 'duplicar' && t){ const c = normalizar(JSON.parse(JSON.stringify(t))); c.nome = (t.nome + ' (cópia)').slice(0, 60);
+    estado.treinos.splice(estado.treinos.indexOf(t) + 1, 0, c); salvar(); renderLista(); }
+  else if (acao === 'excluir' && t){ if (!confirmado(btn, 'Excluir mesmo?')) return; estado.treinos = estado.treinos.filter(x => x !== t); salvar(); renderLista(); }
+  else if (acao === 'testar-som'){ destravar(); const c = audio(); if (c){ const n = c.currentTime + .05; tocar('tic', n); tocar('tic', n + 1); tocar('tic', n + 2); tocar('vai', n + 3); } vibrar(200); }
+  else if (acao === 'exportar'){ $('#io-texto').value = JSON.stringify(estado.treinos.map(({ id, ...t }) => ({ ...t, blocos: t.blocos.map(({ id, ...b }) => ({ ...b, etapas: b.etapas.map(({ id, ...e }) => e) })) }))); $('#io-status').textContent = `${estado.treinos.length} treino(s) no texto. Toque em Copiar.`; }
+  else if (acao === 'copiar'){ const ta = $('#io-texto'); if (!ta.value) $('[data-acao=exportar]').click();
+    navigator.clipboard?.writeText(ta.value).then(() => { $('#io-status').textContent = 'Texto copiado.'; },
+      () => { ta.select(); $('#io-status').textContent = 'Texto selecionado. Use Copiar do celular.'; }) ?? (ta.select()); }
+  else if (acao === 'importar'){
+    let d; try { d = JSON.parse($('#io-texto').value); } catch (e) { $('#io-status').textContent = 'Esse texto não é de treinos. Cole o texto copiado deste app.'; return; }
+    const novos = (Array.isArray(d) ? d : [d]).map(normalizar).filter(Boolean);
+    if (!novos.length){ $('#io-status').textContent = 'Nenhum treino encontrado no texto.'; return; }
+    estado.treinos.push(...novos); salvar(); renderLista(); $('#io-status').textContent = `${novos.length} treino(s) importado(s).`;
+  }
+});
+$('#v-lista').addEventListener('input', ev => {
+  const el = ev.target, c = estado.config;
+  if (el.id === 'cfg-volume'){ c.volume = +el.value; if (MASTER) MASTER.gain.value = c.volume; }
+  else if (el.id?.startsWith('cfg-')) c[el.id.slice(4)] = el.checked;
+  else return;
+  salvar();
+});
+
+/* ---------- editor ---------- */
+let editando = null;
+function abrirEditor(t){ editando = t; mostrar('editor'); renderEditor(); }
+function htmlTempo(valor, attrs, id, rotulo){
+  return `<div class="tempo"><button type="button" class="pm" data-acao="menos" ${attrs} aria-label="Diminuir ${rotulo}">−</button>` +
+    `<input class="t-in" type="text" inputmode="decimal" id="${id}" value="${fmt(valor)}" ${attrs} data-tempo="1" aria-label="${rotulo} (min:seg)">` +
+    `<button type="button" class="pm" data-acao="mais" ${attrs} aria-label="Aumentar ${rotulo}">+</button></div>`;
+}
+function htmlEtapa(e, bi, ei, n){
+  const a = `data-alvo="etapa" data-b="${bi}" data-e="${ei}"`;
+  return `<li class="etapa" data-tipo="${e.tipo}">
+    <button type="button" class="tipo" data-acao="tipo" data-b="${bi}" data-e="${ei}" aria-label="Trocar entre trabalho e descanso">${e.tipo === 'trabalho' ? 'Trabalho' : 'Descanso'}</button>
+    <input class="inp" id="en-${e.id}" data-campo="nome-etapa" data-b="${bi}" data-e="${ei}" value="${esc(e.nome)}" maxlength="40" placeholder="${e.tipo === 'trabalho' ? 'Exercício (opcional)' : 'Nome (opcional)'}" aria-label="Nome da etapa">
+    ${htmlTempo(e.seg, a, 'et-' + e.id, 'tempo da etapa')}
+    <button type="button" class="ic del" data-acao="del-etapa" data-b="${bi}" data-e="${ei}" ${n <= 1 ? 'disabled' : ''} aria-label="Remover etapa">${IC.x}</button>
+  </li>`;
+}
+function htmlBloco(b, bi, nb){
+  const temDescanso = b.etapas.some(e => e.tipo === 'descanso') && b.etapas.some(e => e.tipo === 'trabalho');
+  return `<article class="bloco">
+    <div class="bloco-topo"><span class="bloco-num">Bloco ${bi + 1}</span>
+      <div class="bloco-acoes">
+        <button class="ic" data-acao="bloco-cima" data-b="${bi}" ${bi === 0 ? 'disabled' : ''} aria-label="Mover para cima">${IC.cima}</button>
+        <button class="ic" data-acao="bloco-baixo" data-b="${bi}" ${bi === nb - 1 ? 'disabled' : ''} aria-label="Mover para baixo">${IC.baixo}</button>
+        <button class="ic" data-acao="bloco-dup" data-b="${bi}" aria-label="Duplicar bloco">${IC.dup}</button>
+        <button class="ic" data-acao="bloco-del" data-b="${bi}" ${nb <= 1 ? 'disabled' : ''} aria-label="Excluir bloco">${IC.lixo}</button>
+      </div></div>
+    <input class="inp" id="bn-${b.id}" data-campo="nome-bloco" data-b="${bi}" value="${esc(b.nome)}" maxlength="40" placeholder="Nome do bloco" aria-label="Nome do bloco">
+    <div class="bloco-linha">
+      <div><span class="rotulo">Rodadas</span>
+        <div class="tempo"><button type="button" class="pm" data-acao="menos" data-alvo="rodadas" data-b="${bi}" aria-label="Menos rodadas">−</button><input class="t-in" type="text" inputmode="numeric" id="rd-${b.id}" data-campo="rodadas" data-b="${bi}" value="${b.rodadas}" aria-label="Rodadas"><button type="button" class="pm" data-acao="mais" data-alvo="rodadas" data-b="${bi}" aria-label="Mais rodadas">+</button></div>
+      </div>
+      <div class="dur"><span class="rotulo">Duração do bloco</span><strong>${fmt(duracaoBloco(b))}</strong></div>
+    </div>
+    <div><span class="rotulo" style="margin-bottom:8px">Cada rodada tem</span>
+      <ol class="etapas">${b.etapas.map((e, ei) => htmlEtapa(e, bi, ei, b.etapas.length)).join('')}</ol></div>
+    <div class="chips">
+      <button class="chip" data-acao="add-etapa" data-tipo="trabalho" data-b="${bi}">+ Trabalho</button>
+      <button class="chip" data-acao="add-etapa" data-tipo="descanso" data-b="${bi}">+ Descanso</button>
+    </div>
+    ${temDescanso && b.rodadas > 0 ? `<label class="check"><input type="checkbox" id="ct-${b.id}" data-campo="cortar" data-b="${bi}" ${b.cortarUltimoDescanso ? 'checked' : ''}> Terminar o bloco sem o último descanso</label>` : ''}
+    ${bi < nb - 1 ? `<div class="entre"><span class="rotulo">Descanso antes do bloco ${bi + 2}</span>${htmlTempo(b.descansoDepois, `data-alvo="descansoDepois" data-b="${bi}"`, 'dd-' + b.id, 'descanso entre blocos')}</div>` : ''}
+  </article>`;
+}
+function renderEditor(){
+  const t = editando, nb = t.blocos.length;
+  $('#editor').innerHTML = `
+    <div class="topo"><button class="voltar" data-acao="voltar">${IC.voltar} Treinos</button><span class="salvo">Salvo automaticamente</span></div>
+    <label class="campo"><span class="rotulo">Nome do treino</span><input class="inp titulo-inp" id="nome-treino" data-campo="nome-treino" value="${esc(t.nome)}" maxlength="60"></label>
+    <div class="config-ini"><span><span class="rotulo">Contagem antes de começar</span></span>${htmlTempo(t.preparo, 'data-alvo="preparo"', 'preparo', 'contagem inicial')}</div>
+    ${t.blocos.map((b, bi) => htmlBloco(b, bi, nb)).join('')}
+    <section class="add-bloco"><span class="rotulo">Adicionar bloco</span>
+      <div class="chips">
+        <button class="chip" data-acao="add-bloco" data-modelo="intervalado">Intervalado<small>40/20</small></button>
+        <button class="chip" data-acao="add-bloco" data-modelo="tabata">Tabata<small>8 × 20/10</small></button>
+        <button class="chip" data-acao="add-bloco" data-modelo="emom">EMOM<small>10 min</small></button>
+        <button class="chip" data-acao="add-bloco" data-modelo="direto">Direto<small>2:00</small></button>
+        <button class="chip" data-acao="add-bloco" data-modelo="circuito">Circuito<small>3 exercícios</small></button>
+      </div></section>`;
+  atualizarTotal();
+}
+function atualizarTotal(){ const tot = montarLinha(editando).total; $('#barra-total').textContent = fmt(tot); $('#btn-iniciar-edit').disabled = !tot; }
+function alvo(el){
+  const t = editando, b = +el.dataset.b, e = +el.dataset.e;
+  switch (el.dataset.alvo){
+    case 'preparo': return { get: () => t.preparo, set: v => t.preparo = v, min: 0, max: 300 };
+    case 'descansoDepois': return { get: () => t.blocos[b].descansoDepois, set: v => t.blocos[b].descansoDepois = v, min: 0, max: 3600 };
+    case 'etapa': return { get: () => t.blocos[b].etapas[e].seg, set: v => t.blocos[b].etapas[e].seg = v, min: 1, max: 5999 };
+    case 'rodadas': return { get: () => t.blocos[b].rodadas, set: v => t.blocos[b].rodadas = v, min: 1, max: 99, inteiro: true };
+  }
+}
+const limitar = (v, a) => Math.min(a.max, Math.max(a.min, v));
+function mudou(){ salvar(); renderEditor(); }
+$('#v-editor').addEventListener('click', ev => {
+  const btn = ev.target.closest('button[data-acao]'); if (!btn) return;
+  const t = editando, acao = btn.dataset.acao, bi = +btn.dataset.b, ei = +btn.dataset.e, B = t.blocos[bi];
+  switch (acao){
+    case 'voltar': editando = null; mostrar('lista'); return;
+    case 'iniciar-edit': iniciar(t); return;
+    case 'menos': case 'mais': {
+      const a = alvo(btn), v = a.get(); let nv;
+      if (a.inteiro) nv = v + (acao === 'mais' ? 1 : -1);
+      else { const p = passo(acao === 'mais' ? v : Math.max(0, v - 1)); nv = acao === 'mais' ? (Math.floor(v / p) + 1) * p : (Math.ceil(v / p) - 1) * p; }
+      a.set(limitar(nv, a)); break; }
+    case 'tipo': B.etapas[ei].tipo = B.etapas[ei].tipo === 'trabalho' ? 'descanso' : 'trabalho'; break;
+    case 'del-etapa': if (B.etapas.length > 1) B.etapas.splice(ei, 1); break;
+    case 'add-etapa': B.etapas.push(etapa('', btn.dataset.tipo, btn.dataset.tipo === 'trabalho' ? 40 : 20)); break;
+    case 'bloco-cima': if (bi > 0) [t.blocos[bi - 1], t.blocos[bi]] = [t.blocos[bi], t.blocos[bi - 1]]; break;
+    case 'bloco-baixo': if (bi < t.blocos.length - 1) [t.blocos[bi + 1], t.blocos[bi]] = [t.blocos[bi], t.blocos[bi + 1]]; break;
+    case 'bloco-dup': { const c = normalizar({ blocos: [B] }).blocos[0]; t.blocos.splice(bi + 1, 0, c); break; }
+    case 'bloco-del': if (t.blocos.length <= 1 || !confirmado(btn, 'Excluir?')) return; t.blocos.splice(bi, 1); break;
+    case 'add-bloco': {
+      const ult = t.blocos[t.blocos.length - 1]; if (ult && !ult.descansoDepois) ult.descansoDepois = 60;
+      const nb = MODELOS_BLOCO[btn.dataset.modelo](); nb.descansoDepois = 0; t.blocos.push(nb); break; }
+    default: return;
+  }
+  mudou();
+  if (acao === 'add-bloco') requestAnimationFrame(() => document.querySelector('.bloco:last-of-type')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+});
+$('#v-editor').addEventListener('input', ev => {
+  const el = ev.target, t = editando, b = +el.dataset.b, e = +el.dataset.e;
+  if (el.dataset.campo === 'nome-treino') t.nome = el.value;
+  else if (el.dataset.campo === 'nome-bloco') t.blocos[b].nome = el.value;
+  else if (el.dataset.campo === 'nome-etapa') t.blocos[b].etapas[e].nome = el.value;
+  else return;
+  salvar();
+});
+$('#v-editor').addEventListener('change', ev => {
+  const el = ev.target, t = editando;
+  if (el.dataset.tempo){ const a = alvo(el), v = lerTempo(el.value); if (v !== null) a.set(limitar(v, a)); mudou(); }
+  else if (el.dataset.campo === 'rodadas'){ const v = parseInt(el.value, 10); if (!isNaN(v)) t.blocos[+el.dataset.b].rodadas = Math.min(99, Math.max(1, v)); mudou(); }
+  else if (el.dataset.campo === 'cortar'){ t.blocos[+el.dataset.b].cortarUltimoDescanso = el.checked; mudou(); }
+});
+$('#v-editor').addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('input')) ev.target.blur(); });
+$('#v-editor').addEventListener('focusin', ev => { if (ev.target.matches('.t-in')) ev.target.select(); });
+
+/* ================= cronômetro ================= */
+const R = { ativo: false };
+function iniciar(treino){
+  destravar();
+  const linha = montarLinha(treino); if (!linha.total) return;
+  cancelarSons(); clearInterval(R.timer);
+  Object.assign(R, { ativo: true, treino, linha, eventos: montarEventos(linha), acum: 0, inicio: 0, rodando: false, terminou: false, evIdx: 0, seg: -1 });
+  $('#r-faixa').innerHTML = linha.segs.map(s => `<i class="${s.tipo}" style="flex-grow:${s.seg}"></i>`).join('') + '<div class="r-marca" id="r-marca"></div>';
+  $('#r-voltar').innerHTML = IC.ant + '<span>Voltar</span>';
+  $('#r-pular').innerHTML = IC.prox + '<span>Pular</span>';
+  mostrar('rodando'); pedirTelaLigada(); retomar();
+}
+const decorrido = () => R.rodando ? R.acum + (performance.now() - R.inicio) / 1000 : R.acum;
+function reindexar(){ const i = R.eventos.findIndex(e => e.t >= R.acum - 0.05); R.evIdx = i < 0 ? R.eventos.length : i; }
+function retomar(){
+  if (R.rodando || R.terminou) return;
+  audio(); R.inicio = performance.now(); R.rodando = true; reindexar();
+  clearInterval(R.timer); R.timer = setInterval(tique, 100); tique();
+}
+function pausar(){ if (!R.rodando) return; R.acum = decorrido(); R.rodando = false; clearInterval(R.timer); cancelarSons(); render(); }
+function irPara(t){
+  const estava = R.rodando;
+  if (estava){ clearInterval(R.timer); cancelarSons(); R.rodando = false; }
+  R.acum = Math.max(0, Math.min(t, R.linha.total)); R.terminou = false; reindexar();
+  if (R.acum >= R.linha.total){ finalizar(); return; }
+  if (estava) retomar(); else render();
+}
+function agendar(t){
+  const c = audio(); if (!c) return;
+  sons = sons.filter(s => s.fim > c.currentTime);
+  const E = R.eventos;
+  while (R.evIdx < E.length && E[R.evIdx].t <= t + 1.2){
+    const e = E[R.evIdx++], d = e.t - t;
+    if (d < -0.25) continue;
+    tocar(e.som, c.currentTime + Math.max(0, d));
+  }
+}
+function tique(){
+  const t = decorrido();
+  if (t >= R.linha.total){ R.acum = R.linha.total; R.rodando = false; clearInterval(R.timer); finalizar(); return; }
+  agendar(t); render(t);
+}
+function finalizar(){
+  clearInterval(R.timer); R.rodando = false; R.terminou = true; R.acum = R.linha.total;
+  if (R.evIdx < R.eventos.length){ R.evIdx = R.eventos.length; tocar('fim'); }
+  vibrar([200, 100, 200, 100, 500]); falar('Treino concluído'); soltarTela(); render();
+}
+function sair(){
+  clearInterval(R.timer); R.rodando = false; cancelarSons(); R.ativo = false; soltarTela();
+  try { speechSynthesis.cancel(); } catch (e) {}
+  mostrar(editando ? 'editor' : 'lista'); if (editando) renderEditor();
+}
+const indiceSeg = t => { const S = R.linha.segs; for (let i = 0; i < S.length; i++) if (t < S[i].fim) return i; return S.length - 1; };
+function aoMudar(s){
+  if (s.tipo === 'trabalho'){ vibrar(400); falar(s.nome === 'Trabalho' ? 'Vai!' : s.nome); }
+  else if (s.tipo === 'descanso'){ vibrar([150, 100, 150]); falar(s.nome); }
+  else if (s.tipo === 'transicao'){ vibrar([150, 100, 150]); falar('Descanso. Próximo: ' + s.proximo); }
+  else if (s.tipo === 'preparo') falar('Prepare-se');
+}
+function render(t = decorrido()){
+  const L = R.linha, run = $('#v-rodando');
+  run.classList.toggle('pausado', !R.rodando && !R.terminou);
+  $('#r-aviso').hidden = R.rodando || R.terminou;
+  $('#r-play').innerHTML = R.terminou ? IC.repetir + '<span>Repetir</span>' : R.rodando ? IC.pause + '<span>Pausar</span>' : IC.play + '<span>Continuar</span>';
+  if (!R.terminou) $('#r-sair').textContent = 'Encerrar treino';
+  if (R.terminou){
+    run.dataset.fase = 'fim';
+    $('#r-bloco').textContent = R.treino.nome; $('#r-rodada').textContent = '';
+    $('#r-nome').textContent = 'Treino concluído';
+    const tp = $('#r-tempo'); tp.textContent = fmt(L.total); tp.classList.toggle('longo', tp.textContent.length > 5);
+    $('#r-barra').style.width = '100%'; $('#r-prox').textContent = 'Bom trabalho.';
+    $('#r-dec').textContent = fmt(L.total); $('#r-rest').textContent = '0:00';
+    $('#r-marca').style.left = 'calc(100% - 3px)';
+    $('#r-faixa').querySelectorAll('i').forEach(el => el.classList.add('feito'));
+    $('#r-sair').textContent = 'Voltar';
+    $('#r-pular').disabled = true; R.seg = -1; return;
+  }
+  $('#r-pular').disabled = false;
+  const i = indiceSeg(t), s = L.segs[i];
+  if (i !== R.seg){
+    R.seg = i; aoMudar(s);
+    $('#r-faixa').querySelectorAll('i').forEach((el, k) => el.classList.toggle('feito', k < i));
+  }
+  run.dataset.fase = s.tipo;
+  if (s.tipo === 'preparo'){ $('#r-bloco').textContent = R.treino.nome; $('#r-rodada').textContent = 'Começa em'; }
+  else if (s.tipo === 'transicao'){ $('#r-bloco').textContent = `Bloco ${s.bi + 1} de ${s.nb} concluído`; $('#r-rodada').textContent = `Próximo: ${s.proximo}`; }
+  else { $('#r-bloco').textContent = s.nb > 1 ? `Bloco ${s.bi + 1} de ${s.nb} · ${s.bloco}` : s.bloco;
+    $('#r-rodada').textContent = s.rodadas > 1 ? `Rodada ${s.rodada} de ${s.rodadas}` : ''; }
+  $('#r-nome').textContent = s.nome;
+  const tp = $('#r-tempo'); tp.textContent = fmtCont(s.fim - t); tp.classList.toggle('longo', tp.textContent.length > 5);
+  $('#r-barra').style.width = Math.min(100, (t - s.ini) / s.seg * 100) + '%';
+  const n = L.segs[i + 1];
+  $('#r-prox').innerHTML = n ? `A seguir: <b>${esc(n.nome)}</b> · ${fmt(n.seg)}${n.bi !== s.bi && n.tipo !== 'transicao' ? ' · ' + esc(n.bloco) : ''}` : 'Última etapa';
+  $('#r-dec').textContent = fmt(Math.floor(t)); $('#r-rest').textContent = fmtCont(L.total - t);
+  $('#r-marca').style.left = `calc(${(t / L.total * 100).toFixed(3)}% - 1px)`;
+}
+const alternar = () => { if (R.terminou) return; destravar(); R.rodando ? pausar() : retomar(); };
+$('#r-tempo').addEventListener('click', alternar);
+$('#r-play').addEventListener('click', () => R.terminou ? iniciar(R.treino) : alternar());
+$('#r-pular').addEventListener('click', () => { if (R.terminou) return; const s = R.linha.segs[indiceSeg(decorrido())]; irPara(s.fim); });
+$('#r-voltar').addEventListener('click', () => {
+  const L = R.linha;
+  if (R.terminou){ irPara(L.segs[L.segs.length - 1].ini); return; }
+  const t = decorrido(), i = indiceSeg(t), s = L.segs[i];
+  irPara(t - s.ini > 2 || i === 0 ? s.ini : L.segs[i - 1].ini);
+});
+$('#r-sair').addEventListener('click', ev => { if (!R.terminou && !confirmado(ev.currentTarget, 'Toque de novo para encerrar')) return; sair(); });
+document.addEventListener('keydown', ev => {
+  if (tela !== 'rodando') return;
+  if (ev.code === 'Space'){ ev.preventDefault(); alternar(); }
+  else if (ev.key === 'ArrowRight') $('#r-pular').click();
+  else if (ev.key === 'ArrowLeft') $('#r-voltar').click();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && tela === 'rodando' && R.rodando){ pedirTelaLigada(); audio(); }
+});
+
+/* ================= instalação (só na versão hospedada, que tem manifesto) ================= */
+var promptInstalar = null;
+window.addEventListener('beforeinstallprompt', ev => { ev.preventDefault(); promptInstalar = ev; if (tela === 'lista') renderLista(); });
+window.addEventListener('appinstalled', () => { promptInstalar = null; if (tela === 'lista') renderLista(); });
+if ('serviceWorker' in navigator && document.querySelector('link[rel="manifest"]'))
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+
+carregar(); mostrar('lista');
+})();
+</script>
+
+</body>
+</html>
