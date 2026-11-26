@@ -1,5 +1,5 @@
 // Gerado por montar.py — não editar à mão.
-const VERSAO = 'kairos-timer-cab3a41307';
+const VERSAO = 'kairos-timer-10ba57bcfa';
 const ARQUIVOS = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png',
   './fonts/archivo-latin-wdth.woff2', './fonts/archivo-latin-ext.woff2', './fonts/fraunces-latin.woff2', './fonts/fraunces-latin-ext.woff2'];
 

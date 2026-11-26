@@ -242,12 +242,13 @@ textarea{width:100%;min-height:120px;background:var(--bg);color:var(--fg);border
 .r-totais{display:flex;justify-content:space-between;gap:12px}
 .r-totais strong{font-family:var(--font-display);font-stretch:62%;font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
 .r-totais div:last-child{text-align:right}
-.r-ctrl{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px}
+.r-ctrl{display:grid;grid-template-columns:1fr 1fr 1.4fr 1fr;gap:8px}
 .r-btn{background:var(--surface-2);border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;font-size:14px}
 .r-btn svg{width:26px;height:26px}
 .r-btn.grande{background:var(--fg);color:var(--bg);font-size:17px}
 .r-btn.grande svg{width:34px;height:34px}
-.r-sair{color:var(--muted);font-weight:600;padding:8px;border-radius:10px;justify-self:center;width:auto}
+.r-sair{color:var(--muted);font-weight:600;padding:8px 12px;border-radius:10px;justify-self:center;width:auto}
+.r-btn.armado{font-size:12px;line-height:1.15;text-align:center}
 @media (orientation:landscape) and (max-height:560px){
   .runner{flex-direction:row}
   .r-topo{padding-top:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
@@ -311,6 +312,7 @@ textarea{width:100%;min-height:120px;background:var(--bg);color:var(--fg);border
       </div>
       <div class="r-ctrl">
         <button class="r-btn" id="r-voltar"></button>
+        <button class="r-btn" id="r-reiniciar"></button>
         <button class="r-btn grande" id="r-play"></button>
         <button class="r-btn" id="r-pular"></button>
       </div>
@@ -908,6 +910,7 @@ function iniciar(treino){
   $('#r-faixa').innerHTML = linha.segs.map(s => `<i class="${s.tipo}" style="flex-grow:${s.seg}"></i>`).join('') + '<div class="r-marca" id="r-marca"></div>';
   $('#r-voltar').innerHTML = IC.ant + '<span>Voltar</span>';
   $('#r-pular').innerHTML = IC.prox + '<span>Pular</span>';
+  const rein = $('#r-reiniciar'); rein.classList.remove('armado'); rein.innerHTML = IC.repetir + '<span>Reiniciar</span>';
   mostrar('rodando'); pedirTelaLigada(); retomar();
 }
 const decorrido = () => R.rodando ? R.acum + (performance.now() - R.inicio) / 1000 : R.acum;
@@ -969,7 +972,9 @@ function render(t = decorrido()){
     play.innerHTML = modo === 'repetir' ? IC.repetir + '<span>Repetir</span>' : modo === 'pausar' ? IC.pause + '<span>Pausar</span>' : IC.play + '<span>Continuar</span>';
   }
   const sairTxt = R.terminou ? 'Voltar' : 'Encerrar treino';
-  if ($('#r-sair').textContent !== sairTxt) $('#r-sair').textContent = sairTxt;
+  // sem tocar no botão enquanto ele espera o segundo toque ("Toque de novo..."), senão o aviso some na hora
+  if (!$('#r-sair').classList.contains('armado') && $('#r-sair').textContent !== sairTxt) $('#r-sair').textContent = sairTxt;
+  $('#r-reiniciar').disabled = R.terminou;
   if (R.terminou){
     run.dataset.fase = 'fim';
     $('#r-bloco').textContent = R.treino.nome; $('#r-rodada').textContent = '';
@@ -1023,6 +1028,7 @@ $('#r-voltar').addEventListener('click', () => {
   const t = decorrido(), i = indiceSeg(t), s = L.segs[i];
   irPara(t - s.ini > 2 || i === 0 ? s.ini : L.segs[i - 1].ini);
 });
+$('#r-reiniciar').addEventListener('click', ev => { if (R.terminou || !confirmado(ev.currentTarget, 'Toque de novo para reiniciar')) return; iniciar(R.treino); });
 $('#r-sair').addEventListener('click', ev => { if (!R.terminou && !confirmado(ev.currentTarget, 'Toque de novo para encerrar')) return; sair(); });
 document.addEventListener('keydown', ev => {
   if (tela !== 'rodando') return;
